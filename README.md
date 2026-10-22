@@ -13,7 +13,7 @@ Designed for non-technical individuals (lawyers, compliance officers, risk analy
 
 ### 🌐 Method 1: Instant Web App & PWA Desktop Install (Zero Download)
 1. Open the hosted GitHub Pages link in Google Chrome, Microsoft Edge, or Safari:
-   `https://<your-username>.github.io/<repo-name>/`
+   `https://taizeez.github.io/complaain/`
 2. Click **Install App** in the header or the **Install** icon in your browser address bar.
 3. Complaain is instantly installed as a native Windows/macOS desktop application with its own icon on your Desktop and Start Menu.
 4. **Works 100% offline** — files never touch a server, and the app automatically updates when you reload.
