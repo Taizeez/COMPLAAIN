@@ -12,16 +12,11 @@ if (!(Test-Path $installDir)) {
 }
 
 $htmlFile = "$installDir\Complaain.html"
-$downloadUrl = "https://raw.githubusercontent.com/$($MyInvocation.MyCommand.Path -replace '.*githubusercontent.com/([^/]+/[^/]+)/.*','$1')/main/complaain-portable-offline.html"
-
-# Fallback direct download if invoked via script
-if ($downloadUrl -notlike "https://*") {
-    $downloadUrl = "https://raw.githubusercontent.com/your-username/complaain/main/complaain-portable-offline.html"
-}
+$downloadUrl = "https://raw.githubusercontent.com/Taizeez/COMPLAAIN/main/complaain-portable-offline.html"
 
 Write-Host "Downloading Complaain Standalone App..." -ForegroundColor Gray
 try {
-    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/$env:GITHUB_REPOSITORY/main/complaain-portable-offline.html" -OutFile $htmlFile -ErrorAction SilentlyContinue
+    Invoke-WebRequest -Uri $downloadUrl -OutFile $htmlFile -ErrorAction SilentlyContinue
 } catch {}
 
 if (!(Test-Path $htmlFile) -or (Get-Item $htmlFile).Length -lt 1000) {

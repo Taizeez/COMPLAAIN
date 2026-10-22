@@ -13,19 +13,19 @@ Designed for non-technical individuals (lawyers, compliance officers, risk analy
 
 ### 🌐 Method 1: Instant Web App & PWA Desktop Install (Zero Download)
 1. Open the hosted GitHub Pages link in Google Chrome, Microsoft Edge, or Safari:
-   `https://taizeez.github.io/complaain/`
+   **[https://taizeez.github.io/COMPLAAIN/](https://taizeez.github.io/COMPLAAIN/)**
 2. Click **Install App** in the header or the **Install** icon in your browser address bar.
 3. Complaain is instantly installed as a native Windows/macOS desktop application with its own icon on your Desktop and Start Menu.
 4. **Works 100% offline** — files never touch a server, and the app automatically updates when you reload.
 
 ---
 
-### 📦 Method 2: 1-Click Single Standalone File Download
-- Download the single file **[complaain-portable-offline.html](https://raw.githubusercontent.com/<your-username>/<repo-name>/main/complaain-portable-offline.html)** directly to your computer.
-- Double-click the downloaded `.html` file.
-- It opens immediately in any browser with full offline redaction, spreadsheet column anonymizer, and MuPDF WASM engine built-in.
-- **Zero installation, zero zip files, zero dependencies.** You can carry it on a USB flash drive or email it.
-- *(For Windows Executable: Download **`Complaain-Windows.exe`** from GitHub Releases — 1-click single-file binary, no zip).*
+### 📦 Method 2: Portable Single-File Offline App
+- Launch directly in any browser: **[Open Portable Offline App](https://taizeez.github.io/COMPLAAIN/complaain-portable-offline.html)** (runs 100% in your browser memory, zero installation).
+- To save an offline `.html` copy to your computer:
+  - Click **"Export Portable HTML"** in the top header of the web app, or
+  - Download from **[GitHub Releases](https://github.com/Taizeez/COMPLAAIN/releases)** (single-file `.html` or native **`Complaain-Windows.exe`**).
+- Carry it on a USB flash drive or email it — works offline forever with zero dependencies.
 
 ---
 
@@ -34,7 +34,7 @@ To install the full local AI transformer suite and automatically place a **Compl
 1. Right-click your Windows Start button and choose **PowerShell** (or Windows Terminal).
 2. Paste this single command and press Enter:
    ```powershell
-   irm https://raw.githubusercontent.com/<your-username>/<repo-name>/main/install.ps1 | iex
+   irm https://raw.githubusercontent.com/Taizeez/COMPLAAIN/main/install.ps1 | iex
    ```
 3. A shortcut named **Complaain** will appear directly on your Desktop. Double-click it anytime to run!
 
