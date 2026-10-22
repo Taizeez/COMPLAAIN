@@ -9,6 +9,27 @@
 
   async function exportStandaloneHTML() {
     try {
+      // 1. First attempt to download the precompiled complete offline bundle (includes MuPDF WASM engine)
+      try {
+        const preRes = await fetch("./complaain-portable-offline.html");
+        if (preRes.ok) {
+          const blob = await preRes.blob();
+          const downloadUrl = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = downloadUrl;
+          a.download = "complaain-portable-offline.html";
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            a.remove();
+            URL.revokeObjectURL(downloadUrl);
+          }, 2000);
+          return true;
+        }
+      } catch (e) {
+        console.warn("Precompiled bundle fetch skipped, falling back to dynamic packager:", e);
+      }
+
       const fetchText = async url => {
         const res = await fetch(url);
         if (!res.ok) throw new Error(`Failed to load ${url}`);

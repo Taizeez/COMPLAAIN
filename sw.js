@@ -1,5 +1,5 @@
 // Complaain Service Worker
-const CACHE_NAME = "complaain-v1.3.0";
+const CACHE_NAME = "complaain-v1.3.1";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
@@ -11,7 +11,9 @@ const ASSETS_TO_CACHE = [
   "./js/app.js",
   "./js/vendor/xlsx.full.min.js",
   "./version.json",
-  "./manifest.json"
+  "./manifest.json",
+  "./assets/icon-192.png",
+  "./assets/icon-512.png"
 ];
 
 self.addEventListener("install", event => {

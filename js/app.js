@@ -193,6 +193,8 @@
           installBtn.style.display = "none";
         }
         deferredPrompt = null;
+      } else {
+        alert("To install Complaain on your device:\n\n• In Chrome / Edge: Look for the Install icon (⊕) in the browser address bar.\n• In Safari / Mac / iOS: Tap Share ➔ 'Add to Home Screen'.\n• Offline Single File: Click '⬇️ Download Offline App' to save the complete standalone app to your computer!");
       }
     });
   }
@@ -208,10 +210,10 @@
   if (btnExportOffline) {
     btnExportOffline.addEventListener("click", async () => {
       btnExportOffline.disabled = true;
-      btnExportOffline.textContent = "Compiling Bundle...";
+      btnExportOffline.textContent = "Downloading...";
       await exportStandaloneHTML();
       btnExportOffline.disabled = false;
-      btnExportOffline.textContent = "Export Portable HTML";
+      btnExportOffline.textContent = "⬇️ Download Offline App";
     });
   }
 

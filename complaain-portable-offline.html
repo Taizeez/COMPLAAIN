@@ -6,6 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Complaain — Compliance as an Infrastructure | PII Redaction & Column Anonymizer Suite</title>
   
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <meta name="theme-color" content="#0a0f1d">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -336,6 +339,19 @@ header.app-header {
 .btn-gold:hover {
   filter: brightness(1.1);
   box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
+}
+
+.btn-emerald {
+  background: linear-gradient(135deg, var(--emerald-primary), #059669);
+  color: #fff;
+  border-color: #059669;
+  box-shadow: 0 2px 12px rgba(16, 185, 129, 0.25);
+  font-weight: 600;
+}
+
+.btn-emerald:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
 }
 
 .btn-secondary {
@@ -833,8 +849,8 @@ ul.results-list {
     </div>
     <div class="header-actions">
       <button id="btnCheckUpdates" class="btn btn-secondary btn-sm" title="Check for application updates">Check Updates</button>
-      <button id="btnExportOffline" class="btn btn-secondary btn-sm" title="Download standalone single-file app for air-gapped computers">Export Portable HTML</button>
-      <button id="btnInstallPwa" class="btn btn-gold btn-sm" style="display: none;">Install App</button>
+      <button id="btnExportOffline" class="btn btn-emerald btn-sm" title="Download standalone single-file offline app (.html)">⬇️ Download Offline App</button>
+      <button id="btnInstallPwa" class="btn btn-gold btn-sm" title="Install Complaain as desktop app with native icon">📲 Install App</button>
     </div>
   </header>
 
@@ -2925,6 +2941,8 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
           installBtn.style.display = "none";
         }
         deferredPrompt = null;
+      } else {
+        alert("To install Complaain on your device:\n\n• In Chrome / Edge: Look for the Install icon (⊕) in the browser address bar.\n• In Safari / Mac / iOS: Tap Share ➔ 'Add to Home Screen'.\n• Offline Single File: Click '⬇️ Download Offline App' to save the complete standalone app to your computer!");
       }
     });
   }
@@ -2940,10 +2958,10 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   if (btnExportOffline) {
     btnExportOffline.addEventListener("click", async () => {
       btnExportOffline.disabled = true;
-      btnExportOffline.textContent = "Compiling Bundle...";
+      btnExportOffline.textContent = "Downloading...";
       await exportStandaloneHTML();
       btnExportOffline.disabled = false;
-      btnExportOffline.textContent = "Export Portable HTML";
+      btnExportOffline.textContent = "⬇️ Download Offline App";
     });
   }
 
