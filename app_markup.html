@@ -1,0 +1,259 @@
+<!doctype html>
+<!--
+  ReasonableRedactor (offline edition) - GENERATED FILE, do not edit by hand.
+  Built from src/reasonableredactor-hosted.html by scripts/build-offline.mjs.
+
+  Runs entirely from this one file. There is no download at runtime and no
+  server: the MuPDF engine is compiled to WebAssembly and embedded here as
+  base64. A Content-Security-Policy sets connect-src 'none', so the browser
+  itself forbids this page from opening any network connection. Open it,
+  disconnect from the internet, redact a PDF: it works, and nothing can leave.
+
+  Engine: MuPDF (mupdf.js, AGPL-3.0, by Artifex). This file is AGPL.
+-->
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'unsafe-inline'; img-src blob: data:; font-src data:; worker-src blob:; child-src blob:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ReasonableRedactor — local PDF redaction for legal documents</title>
+<style>
+  :root {
+    --bg: #f4f2ed; --panel: #ffffff; --ink: #21201c; --muted: #6a675e;
+    --accent: #8a6d1a; --accent-dark: #6e5713; --accent-soft: #faf5e6;
+    --line: #e4e0d5; --ok: #1d6b3a; --ok-soft: #eaf3ec; --warn: #a03518; --warn-soft: #fbeeea;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 28px 18px 72px; }
+
+  header { margin-bottom: 22px; }
+  .brand { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  header h1 { font-size: 1.75rem; margin: 0; letter-spacing: -0.01em; }
+  header h1 em { font-style: normal; color: var(--accent-dark); }
+  .badges { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge { font-size: .82rem; padding: 4px 11px; border-radius: 999px; border: 1px solid; }
+  .badge.local { background: var(--ok-soft); color: var(--ok); border-color: #cfe0cf; }
+  .badge.real { background: var(--accent-soft); color: var(--accent-dark); border-color: #e6d9ae; }
+  header p.sub { margin: 10px 0 0; color: var(--muted); max-width: 62ch; }
+
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,.03); }
+  .card > h2 { font-size: .82rem; margin: 0 0 14px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .card > h2 .step { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; font-size: .78rem; margin-right: 8px; vertical-align: -5px; letter-spacing: 0; }
+
+  .groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 16px; }
+  fieldset { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px 12px; margin: 0; background: #fcfbf8; min-width: 0; }
+  legend { font-size: .95rem; font-weight: 650; padding: 0 6px; }
+
+  .switch { display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; cursor: pointer; }
+  .switch input { position: absolute; opacity: 0; }
+  .slider { flex: 0 0 36px; height: 21px; border-radius: 999px; background: #cdc8ba; position: relative; transition: background .15s; margin-top: 2px; }
+  .slider::after { content: ""; position: absolute; top: 2.5px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.25); }
+  .switch input:checked + .slider { background: var(--accent); }
+  .switch input:checked + .slider::after { transform: translateX(14px); }
+  .switch input:focus-visible + .slider { outline: 2px solid var(--accent-dark); outline-offset: 2px; }
+  .switch .lab { font-size: .95rem; }
+  .switch small { display: block; color: var(--muted); font-size: .82rem; line-height: 1.4; }
+
+  label.field { display: block; margin: 10px 0 3px; font-size: .88rem; font-weight: 600; }
+  label.field small { font-weight: 400; color: var(--muted); }
+  input[type=text], textarea, select { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: .92rem; background: #fff; }
+  textarea { min-height: 72px; resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .86rem; }
+  .hint { font-size: .8rem; color: var(--muted); margin: 4px 0 0; }
+
+  details.adv { margin-top: 14px; }
+  details.adv summary { cursor: pointer; color: var(--accent-dark); font-size: .9rem; font-weight: 600; }
+  .adv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 10px; }
+
+  #drop { border: 2px dashed #c9c2b0; border-radius: 10px; padding: 38px 20px; text-align: center; background: #fffdf7; cursor: pointer; transition: background .15s, border-color .15s; }
+  #drop.over { background: var(--accent-soft); border-color: var(--accent); }
+  #drop strong { color: var(--accent-dark); font-size: 1.05rem; }
+  #drop p { margin: 6px 0 0; color: var(--muted); font-size: .9rem; }
+  #status { margin: 12px 0 0; font-size: .9rem; color: var(--muted); }
+
+  .results-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
+  button.rerun { background: var(--accent); border: 0; color: #fff; border-radius: 8px; padding: 9px 18px; font: inherit; font-size: .92rem; font-weight: 600; cursor: pointer; }
+  button.rerun:hover { background: var(--accent-dark); }
+  button.rerun.dirty { background: var(--warn); box-shadow: 0 0 0 3px var(--warn-soft); }
+  button.clear { background: #fff; border: 1px solid var(--line); color: var(--muted); border-radius: 8px; padding: 9px 16px; font: inherit; font-size: .92rem; cursor: pointer; }
+  button.clear:hover { border-color: var(--warn); color: var(--warn); }
+  .bar-hint { margin: 0 0 12px; font-size: .84rem; color: var(--muted); }
+  ul#results { list-style: none; padding: 0; margin: 0; }
+  #results li { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; background: #fff; }
+  .res-head { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .fname { font-weight: 650; word-break: break-all; flex: 1 1 auto; }
+  button.dl { background: var(--accent); border: 0; color: #fff; border-radius: 8px; padding: 8px 18px; font: inherit; font-size: .9rem; font-weight: 600; cursor: pointer; }
+  button.dl:hover { background: var(--accent-dark); }
+  .meta { font-size: .87rem; color: var(--muted); margin-top: 8px; }
+  .pill { display: inline-block; font-size: .8rem; padding: 2px 10px; border-radius: 999px; margin-right: 6px; }
+  .pill.ok { background: var(--ok-soft); color: var(--ok); }
+  .pill.bad { background: var(--warn-soft); color: var(--warn); font-weight: 600; }
+  details.log { margin-top: 10px; }
+  details.log summary { cursor: pointer; font-size: .87rem; color: var(--accent-dark); font-weight: 600; }
+  table.log { border-collapse: collapse; width: 100%; margin-top: 8px; font-size: .84rem; }
+  table.log th, table.log td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.log th { color: var(--muted); font-weight: 600; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; }
+  td.orig { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; word-break: break-all; }
+  img.preview { max-width: 100%; border: 1px solid var(--line); border-radius: 8px; margin-top: 10px; }
+
+  .card.safety { border-color: #cfe0cf; background: #fbfdfb; }
+  .card.safety > h2 { color: var(--ok); }
+  .safety p { margin: 0 0 11px; }
+  .safety p.lead { font-weight: 650; color: var(--ink); font-size: 1.02rem; }
+  .safety details { margin-top: 4px; }
+  .safety details summary { font-weight: 600; color: var(--ok); }
+  .safety ol { margin: 10px 0 0; padding-left: 20px; }
+  .safety ol li { margin-bottom: 8px; }
+  .safety code { background: #eef3ee; padding: 1px 6px; border-radius: 4px; font-size: .88em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+  footer { margin-top: 30px; font-size: .85rem; color: var(--muted); }
+  footer ul { padding-left: 18px; }
+  footer a { color: var(--accent-dark); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><h1>Reasonable<em>Redactor</em></h1></div>
+    <div class="badges">
+      <span class="badge local">✓ Runs entirely on your device — files never leave it</span>
+      <span class="badge real">Real redaction — text is removed, not covered</span>
+      <span class="badge real">Offline file — the browser is blocked from any network</span>
+    </div>
+    <p class="sub">Prepare hearing-ready PDFs. Remove contact details, identifiers, case references, names of witnesses and organisations. People and organisations are anonymised consistently (Witness A, Company B) so the document stays readable.</p>
+  </header>
+
+  <div class="card safety">
+    <h2>Is this safe? How your documents stay private</h2>
+    <p class="lead">This tool cannot send your files anywhere. Here is why, in plain terms, and how to confirm it yourself without taking anyone's word for it.</p>
+
+    <p>You are not visiting a website. This is a single file that lives on your own computer, like a PDF or a Word document. It opens inside your browser only because a browser is the program that knows how to display it. Once you have the file, it does not need the internet to work.</p>
+
+    <p>There is nowhere for your document to go. When an ordinary website handles a file, it sends that file to a computer somewhere else, owned by whoever runs the site. This tool has no such computer behind it. The part that does the actual redaction is built into this one file. When you add a PDF, it is opened only in your computer's short-term memory, edited there, and handed straight back to you. It is never sent out, because there is no outside address to send it to.</p>
+
+    <p>The browser is instructed to block all internet access while this file is open. The file carries a standard browser security rule (a Content Security Policy) that your browser follows automatically. It forbids this page from making any internet connection at all. So even if the file were somehow tampered with, the browser itself would refuse to let anything leave. It is a locked door the browser enforces, not a promise you have to trust.</p>
+
+    <p>Nothing is kept afterwards. A redacted copy is created only when you click Download, and it saves wherever you choose, like any other download. Close the tab and the file you loaded, along with everything the tool was working on, is wiped from memory. There is no account, no history, and no stored copy of your documents anywhere.</p>
+
+    <p>What this does not cover, in fairness. This stops your documents being uploaded or retained. It cannot protect a computer that is already compromised by other software, and it cannot judge what you do with the redacted file afterwards. Redaction is also only as thorough as the options you choose, so always open the finished PDF and check it. Everything the tool removed is listed under “What was removed” on each file for exactly that reason.</p>
+
+    <details>
+      <summary>Three ways to check this yourself</summary>
+      <ol>
+        <li>Disconnect from the internet (turn off wi-fi or unplug the cable), then redact a document. It still works. A tool that relied on the internet could not do that.</li>
+        <li>Open your browser's developer tools and choose the Network tab, then redact a file. You will see no data leaving. This is the check an IT department would run.</li>
+        <li>This file is plain text. Open it in Notepad or TextEdit and search for <code>connect-src 'none'</code>. That single line is the instruction that tells the browser to block all network access.</li>
+      </ol>
+    </details>
+  </div>
+
+  <div class="card" id="settingsCard">
+    <h2><span class="step">1</span>Choose what to redact</h2>
+    <div class="groups">
+
+      <fieldset>
+        <legend>Contact details</legend>
+        <label class="switch"><input type="checkbox" id="tEmails" checked><span class="slider"></span>
+          <span class="lab">Email addresses<small>Masks the username, keeps the domain: a.davies@example.com → [redacted]@example.com</small></span></label>
+        <label class="switch"><input type="checkbox" id="tBcc" checked><span class="slider"></span>
+          <span class="lab">Bcc lines<small>Replaces the Bcc header and removes wrapped continuation lines</small></span></label>
+        <label class="switch"><input type="checkbox" id="tPhones"><span class="slider"></span>
+          <span class="lab">Phone numbers<small>UK landlines, mobiles and +44 formats</small></span></label>
+        <label class="switch"><input type="checkbox" id="tPostcodes"><span class="slider"></span>
+          <span class="lab">Postcodes<small>UK postcode formats</small></span></label>
+        <label class="field" for="keepDomains">Keep these domains visible <small>(comma-separated)</small></label>
+        <input type="text" id="keepDomains" placeholder="thereasonableadjustment.co.uk">
+        <label class="field" for="keepEmails">Keep these exact emails visible</label>
+        <input type="text" id="keepEmails" placeholder="advocacy@example.org">
+      </fieldset>
+
+      <fieldset>
+        <legend>Identifiers &amp; references</legend>
+        <label class="switch"><input type="checkbox" id="tCaseNos"><span class="slider"></span>
+          <span class="lab">Case &amp; claim numbers<small>Tribunal case numbers (like 1234567/2025), neutral citations (like [2026] EWCA Civ 123), and references after “Case No”</small></span></label>
+        <label class="switch"><input type="checkbox" id="tNI"><span class="slider"></span>
+          <span class="lab">National Insurance numbers</small></span></label>
+        <label class="switch"><input type="checkbox" id="tDOB"><span class="slider"></span>
+          <span class="lab">Dates of birth<small>Dates on lines mentioning DOB, date of birth or born</small></span></label>
+        <label class="switch"><input type="checkbox" id="tMoney"><span class="slider"></span>
+          <span class="lab">Financial amounts<small>£ figures</small></span></label>
+        <label class="switch"><input type="checkbox" id="tLegislation"><span class="slider"></span>
+          <span class="lab">Legislation references<small>Act names with years, section/article/regulation/schedule citations</small></span></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>People, organisations &amp; terms</legend>
+        <label class="field" for="lWitnesses">Witnesses &amp; parties <small>(one per line)</small></label>
+        <textarea id="lWitnesses" placeholder="Jane Bloggs&#10;John Smith = the Claimant"></textarea>
+        <p class="hint">Replaced consistently: first name listed becomes Witness A, second Witness B, and so on. Titled surnames (Mr Smith, Dr Bloggs) are caught too. Use <code>Name = Label</code> to set your own label.</p>
+        <label class="field" for="lCompanies">Companies &amp; organisations <small>(one per line)</small></label>
+        <textarea id="lCompanies" placeholder="Acme Recruitment Ltd&#10;Widgets UK Ltd = the Respondent"></textarea>
+        <p class="hint">Replaced as Company A, Company B… or your own label with <code>Name = Label</code>.</p>
+        <label class="field" for="lTerms">Key issues, particulars &amp; other terms <small>(one per line)</small></label>
+        <textarea id="lTerms" placeholder="the incident on 3 March&#10;Project Nightjar = [project]"></textarea>
+        <p class="hint">Any exact phrase you paste here is removed wherever it appears on a line.</p>
+      </fieldset>
+    </div>
+
+    <details class="adv">
+      <summary>Advanced options</summary>
+      <div class="adv-grid">
+        <div>
+          <label class="field" for="optStyle">Style</label>
+          <select id="optStyle">
+            <option value="clean" selected>Clean — blends into the page</option>
+            <option value="blackout">Blackout — black boxes, white text</option>
+          </select>
+        </div>
+        <div>
+          <label class="field" for="maskUser">Email username replacement</label>
+          <input type="text" id="maskUser" value="[redacted]">
+        </div>
+        <div>
+          <label class="field" for="bccRep">Bcc replacement text</label>
+          <input type="text" id="bccRep" value="Bcc: [redacted]">
+        </div>
+        <div>
+          <label class="field" for="termRep">Default replacement for terms</label>
+          <input type="text" id="termRep" value="[redacted]">
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">2</span>Add your PDFs</h2>
+    <div id="drop" tabindex="0" role="button" aria-label="Choose PDF files">
+      <strong>Drop PDFs here</strong> or click to choose files
+      <p>Multiple files are fine. Everything is processed on this device — nothing is uploaded.</p>
+    </div>
+    <input type="file" id="fileInput" accept="application/pdf,.pdf" multiple hidden>
+    <p id="status">Starting redaction engine (embedded, no download)…</p>
+  </div>
+
+  <div class="card" id="resultsCard" hidden>
+    <h2><span class="step">3</span>Redacted files</h2>
+    <div class="results-bar" id="resultsBar" hidden>
+      <button class="rerun" id="rerunBtn">Re-apply current settings to 0 files</button>
+      <button class="clear" id="clearBtn">Clear all (0)</button>
+    </div>
+    <p class="bar-hint">Files stay loaded here. Change any setting above, then press re-apply to refresh every file without re-uploading.</p>
+    <ul id="results"></ul>
+  </div>
+
+  <footer>
+    <strong>Before relying on a redacted document</strong>
+    <ul>
+      <li>Open “What was removed” under each file and check the log — you are responsible for what stays in.</li>
+      <li>Scanned pages that are pure images have no text layer and cannot be redacted. The tool warns you when it finds them; run OCR first.</li>
+      <li>Automatic patterns are aids, not guarantees. Unusual formats (a case number split across two lines, a nickname not on your list) will be missed. The built-in check confirms that everything it did remove is genuinely gone from the text layer.</li>
+    </ul>
+    <p>Redaction engine: <a href="https://mupdf.readthedocs.io/en/latest/">MuPDF</a> (AGPL) running as WebAssembly. Free and open source, by <a href="https://thereasonableadjustment.co.uk/">The Reasonable Adjustment</a>. <a href="https://github.com/ReasonableMedia/ReasonableRedactor">Source code</a>.</p>
+  </footer>
+</div>
+
+
+</body>
+</html>

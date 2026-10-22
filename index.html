@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Complaain — Compliance as an Infrastructure | PII Redaction & Column Anonymizer Suite</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="app-wrapper">
+  <!-- Header & Brand -->
+  <header class="app-header">
+    <div class="brand-section">
+      <div class="brand-icon">🛡️</div>
+      <div class="brand-titles">
+        <h1>Compl<span>aain</span></h1>
+        <p>Compliance as an Infrastructure — Air-Gapped PII Redaction & Column Anonymizer</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button id="btnCheckUpdates" class="btn btn-secondary btn-sm" title="Check for application updates">Check Updates</button>
+      <button id="btnExportOffline" class="btn btn-secondary btn-sm" title="Download standalone single-file app for air-gapped computers">Export Portable HTML</button>
+      <button id="btnInstallPwa" class="btn btn-gold btn-sm" style="display: none;">Install App</button>
+    </div>
+  </header>
+
+  <!-- Badges Strip -->
+  <div class="badges-strip">
+    <span class="badge badge-success">✓ 100% Client-Side — Files Never Uploaded</span>
+    <span class="badge badge-accent">Fintech & Legal Suite (NG, UK, EU, US, Global)</span>
+    <span class="badge badge-accent">Spreadsheet Column Anonymizer (.xlsx, .csv)</span>
+    <span class="badge badge-success" id="pdfEngineStatus">MuPDF WASM Engine Ready</span>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <nav class="nav-tabs" role="tablist">
+    <button id="tabSpreadsheet" class="tab-btn active" role="tab">📊 Spreadsheet Mode (Excel / CSV)</button>
+    <button id="tabPdf" class="tab-btn" role="tab">📄 Document Mode (PDF)</button>
+    <button id="tabRules" class="tab-btn" role="tab">🛡️ PII Rule Catalog</button>
+    <button id="tabAudit" class="tab-btn" role="tab">📋 Compliance Audit Log</button>
+  </nav>
+
+  <!-- ========================================================================
+       VIEW 1: SPREADSHEET MODE
+       ======================================================================== -->
+  <div id="viewSpreadsheet" class="view-panel active">
+    <!-- Step 1: Upload -->
+    <div class="card">
+      <div class="card-header">
+        <h2><span class="step-num">1</span>Select Spreadsheet</h2>
+        <span id="sheetFileInfo" class="badge badge-muted">No file loaded</span>
+      </div>
+      <div id="sheetDrop" class="drop-zone" tabindex="0">
+        <span class="drop-icon">📑</span>
+        <strong>Drop your Excel or CSV file here</strong>
+        <p>Supports .xlsx, .xls, .csv, .tsv and Google Sheets exports. Entirely processed in your browser memory.</p>
+      </div>
+      <input type="file" id="sheetFileInput" accept=".xlsx,.xls,.csv,.tsv" hidden>
+    </div>
+
+    <!-- Step 2: Column Anonymization Settings -->
+    <div id="sheetConfigCard" class="card hidden">
+      <div class="card-header">
+        <h2><span class="step-num">2</span>Column Inspection &amp; Anonymization Strategy</h2>
+        <span id="sheetChangesPill" class="badge badge-accent">0 values sanitized</span>
+      </div>
+
+      <!-- Multi-sheet tabs -->
+      <div id="sheetTabContainer" class="sheet-tabs-bar"></div>
+
+      <!-- Batch Column Selection & Action Bar -->
+      <div class="batch-actions-bar">
+        <label class="select-all-label">
+          <input type="checkbox" id="chkSelectAllCols">
+          <span><strong>Select All</strong></span>
+        </label>
+        <button id="btnSelectPiiCols" class="btn btn-secondary btn-sm" title="Select all columns detected with sensitive PII">Select Detected PII</button>
+        <div style="width: 1px; height: 24px; background: var(--border-subtle); margin: 0 4px;"></div>
+        <button id="btnAnonymizeSelected" class="btn btn-gold btn-sm" title="Replace selected columns with consistent synthetic pseudonyms">✨ Anonymize Selected</button>
+        <button id="btnMaskSelected" class="btn btn-secondary btn-sm" title="Partially mask characters in selected columns">🔒 Mask Selected</button>
+        <button id="btnRedactSelected" class="btn btn-secondary btn-sm" title="Completely blank out selected columns with [REDACTED]">⬛ Redact Selected</button>
+        <button id="btnResetSelected" class="btn btn-ghost btn-sm" title="Reset selected columns to original data">Reset Selected</button>
+      </div>
+
+      <!-- Column Config Grid -->
+      <div id="columnConfigList" class="column-config-grid"></div>
+    </div>
+
+    <!-- Step 3: Interactive Table Preview & Diff Viewer -->
+    <div id="sheetPreviewCard" class="card hidden">
+      <div class="card-header">
+        <h2><span class="step-num">3</span>Sanitized Preview &amp; Audit Diff</h2>
+        <div class="preview-controls">
+          <div class="diff-toggle-group">
+            <button class="diff-toggle-btn active" data-mode="sanitized">Sanitized</button>
+            <button class="diff-toggle-btn" data-mode="original">Original</button>
+            <button class="diff-toggle-btn" data-mode="diff">Side-by-Side Diff</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-responsive-wrapper">
+        <table id="previewTable" class="data-table"></table>
+      </div>
+
+      <!-- Export Actions -->
+      <div class="export-bar">
+        <button id="btnDownloadXlsx" class="btn btn-gold">Download Sanitized Excel (.xlsx)</button>
+        <button id="btnDownloadCsv" class="btn btn-secondary">Download Sanitized CSV (.csv)</button>
+        <button id="btnDownloadAuditCsv" class="btn btn-secondary">Download Compliance Audit Log (.csv)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       VIEW 2: DOCUMENT / PDF MODE
+       ======================================================================== -->
+  <div id="viewPdf" class="view-panel">
+    <div class="card">
+      <div class="card-header">
+        <h2><span class="step-num">1</span>Choose PII Entities to Redact</h2>
+      </div>
+      <div class="checkbox-grid">
+        <label class="check-label">
+          <input type="checkbox" id="pdfOptBvn" checked>
+          <span><strong>Bank Verification Number (BVN)</strong><small>11-digit Nigerian financial identifier</small></span>
+        </label>
+        <label class="check-label">
+          <input type="checkbox" id="pdfOptNin" checked>
+          <span><strong>National Identification Number (NIN)</strong><small>11-digit national identity</small></span>
+        </label>
+        <label class="check-label">
+          <input type="checkbox" id="pdfOptCac" checked>
+          <span><strong>CAC Business Registration</strong><small>RC, BN, IT, LLP registration numbers</small></span>
+        </label>
+        <label class="check-label">
+          <input type="checkbox" id="pdfOptCards" checked>
+          <span><strong>Credit / Debit Cards (PAN)</strong><small>Visa, Mastercard, Verve with Luhn check</small></span>
+        </label>
+        <label class="check-label">
+          <input type="checkbox" id="pdfOptIban" checked>
+          <span><strong>IBAN &amp; Bank Accounts</strong><small>International accounts with Mod-97 validation</small></span>
+        </label>
+        <label class="check-label">
+          <input type="checkbox" id="pdfOptEmails" checked>
+          <span><strong>Email Addresses</strong><small>Mask username while preserving domain</small></span>
+        </label>
+        <label class="check-label">
+          <input type="checkbox" id="pdfOptPhones" checked>
+          <span><strong>Phone Numbers</strong><small>Nigerian (+234, 080), UK (+44), international</small></span>
+        </label>
+        <label class="check-label">
+          <input type="checkbox" id="pdfOptNames" checked>
+          <span><strong>Names with Titles / Honorifics</strong><small>Chief, Alhaji, Barrister, Dr, Engr, Pastor, etc.</small></span>
+        </label>
+      </div>
+      <div style="display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
+        <div style="flex: 1 1 300px;">
+          <label class="check-label" style="background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.3);">
+            <input type="checkbox" id="pdfOptOcr" checked>
+            <span>
+              <strong style="color: var(--emerald-primary);">⚡ Enable Offline OCR for Scanned Image PDFs</strong>
+              <small>Automatically renders scanned image pages, recognizes text via Tesseract WebAssembly, and permanently burns pixel-level redactions into the image.</small>
+            </span>
+          </label>
+        </div>
+        <div style="flex: 0 0 280px;">
+          <label style="font-size: 0.88rem; color: var(--ink-secondary); display: block; margin-bottom: 6px;">Redaction Appearance Style</label>
+          <select id="pdfOptStyle" class="select-action">
+            <option value="badges" selected>Smart Badges ([NAME_REDACTED], [NIN_REDACTED], etc.)</option>
+            <option value="generic">[REDACTED] Generic Badge</option>
+            <option value="blackout">Blackout (Solid black rectangles)</option>
+            <option value="clean">Clean (Whiteout boxes)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Custom Words, Numbers & Characters to Redact -->
+      <div style="margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border-subtle);">
+        <label for="pdfCustomPhrases" style="display: block; font-size: 0.92rem; font-weight: 700; color: var(--ink-primary); margin-bottom: 6px;">
+          🎯 Custom Words, Numbers or Characters to Redact (comma-separated):
+        </label>
+        <input type="text" id="pdfCustomPhrases" placeholder="e.g. Gbajabiamila, 0049201948, Asaba, Plot 5, confidential settlement" style="width: 100%; padding: 10px 14px; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); color: var(--ink-primary); font-size: 0.9rem; font-family: inherit;">
+        <small style="color: var(--ink-muted); display: block; margin-top: 5px;">
+          Enter custom names, account numbers, property locations, or phrases separated by commas. Each item will be automatically located and redacted with text replacement badges across all pages.
+        </small>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <h2><span class="step-num">2</span>Add PDF Documents</h2>
+        <div style="display: flex; gap: 8px;">
+          <button id="btnOpenVisualStudioDirect" class="btn btn-sm btn-secondary" title="Directly open Visual Redaction Studio for manual redaction">🖌️ Open in Visual Studio</button>
+          <input type="file" id="visualStudioDirectInput" accept="application/pdf,.pdf" hidden>
+        </div>
+      </div>
+      <div id="pdfDrop" class="drop-zone" tabindex="0">
+        <span class="drop-icon">📄</span>
+        <strong>Drop PDFs here or click to choose</strong>
+        <p>Supports both digital PDFs (text streams) and scanned image PDFs (in-browser OCR + pixel-level burn).</p>
+      </div>
+      <input type="file" id="pdfFileInput" accept="application/pdf,.pdf" multiple hidden>
+    </div>
+
+    <div id="pdfResultsCard" class="card hidden">
+      <div class="card-header">
+        <h2><span class="step-num">3</span>Redacted PDF Output</h2>
+      </div>
+      <ul id="pdfResultsList" class="results-list"></ul>
+    </div>
+  </div>
+
+  <!-- Visual Redactor Studio Modal for Scanned Documents -->
+  <div id="visualStudioModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h2 style="font-size: 1.25rem; font-weight: 700;">🖌️ Visual Redaction Studio for Scanned Pages</h2>
+          <p style="color: var(--ink-secondary); font-size: 0.85rem;">Click &amp; drag directly on the page to redact signatures, stamps, photos, or auto-stamp text &amp; numbers with replacement badges.</p>
+        </div>
+        <button id="btnCloseVisualStudio" class="btn btn-sm btn-ghost" style="font-size: 1.4rem;">&times;</button>
+      </div>
+
+      <div class="modal-toolbar">
+        <div class="toolbar-group">
+          <label style="color: var(--ink-secondary); font-size: 0.85rem;">Page:</label>
+          <select id="vStudioPageSelect" class="select-action" style="width: auto; padding: 4px 10px;"></select>
+        </div>
+        <div class="toolbar-group">
+          <label style="color: var(--ink-secondary); font-size: 0.85rem;">Stamp Badge:</label>
+          <select id="vStudioStampSelect" class="select-action" style="width: auto; padding: 4px 10px;">
+            <option value="[NAME_REDACTED]" selected>[NAME_REDACTED]</option>
+            <option value="[NIN_REDACTED]">[NIN_REDACTED]</option>
+            <option value="[EMAIL_REDACTED]">[EMAIL_REDACTED]</option>
+            <option value="[PHONE_REDACTED]">[PHONE_REDACTED]</option>
+            <option value="[BVN_REDACTED]">[BVN_REDACTED]</option>
+            <option value="[ADDRESS_REDACTED]">[ADDRESS_REDACTED]</option>
+            <option value="[ACCOUNT_REDACTED]">[ACCOUNT_REDACTED]</option>
+            <option value="[SIGNATURE_REDACTED]">[SIGNATURE_REDACTED]</option>
+            <option value="[STAMP_REDACTED]">[STAMP_REDACTED]</option>
+            <option value="[CONFIDENTIAL]">[CONFIDENTIAL]</option>
+            <option value="[REDACTED]">[REDACTED]</option>
+            <option value="custom">✏️ Custom Text...</option>
+            <option value="blackout">⬛ Blackout Box</option>
+            <option value="whiteout">⬜ Clean Box</option>
+          </select>
+          <input type="text" id="vStudioCustomInput" class="hidden" placeholder="e.g. NIN_REDACTED, SECRET..." style="width: 140px; padding: 4px 8px; font-size: 0.85rem; background: #0f172a; border: 1px solid var(--border-subtle); border-radius: 4px; color: var(--ink-primary);">
+          <button id="btnUndoBox" class="btn btn-sm btn-ghost">Undo</button>
+          <button id="btnClearBoxes" class="btn btn-sm btn-ghost">Clear All</button>
+        </div>
+        <div class="toolbar-group" style="margin-left: 6px; border-left: 1px solid var(--border-subtle); padding-left: 10px; display: flex; align-items: center; gap: 6px;">
+          <label style="color: var(--ink-secondary); font-size: 0.85rem; white-space: nowrap;">🔍 Text/Numbers to Redact (comma-separated):</label>
+          <input type="text" id="vStudioFindInput" placeholder="e.g. Gbajabiamila, 0049201948, Asaba, Plot 5" style="width: 220px; padding: 4px 8px; font-size: 0.85rem; background: #0f172a; border: 1px solid var(--border-subtle); border-radius: 4px; color: var(--ink-primary);">
+          <button id="btnVStudioFindStamp" class="btn btn-sm btn-secondary" title="Search text/numbers on this page and auto-place badge stamps">⚡ Auto-Stamp</button>
+        </div>
+        <span id="vStudioBoxCount" class="badge badge-accent">0 boxes drawn</span>
+      </div>
+
+      <div class="canvas-scroll-container">
+        <div class="canvas-wrapper" id="canvasWrapper">
+          <canvas id="vStudioCanvas"></canvas>
+          <canvas id="vStudioOverlay"></canvas>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <span style="color: var(--ink-muted); font-size: 0.85rem;">Redactions are physically burned into the bitmap pixels upon saving.</span>
+        <button id="btnSaveVisualRedaction" class="btn btn-gold">Burn Redactions &amp; Save Page</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       VIEW 3: PII RULE CATALOG & TECHNICAL EXPLANATION
+       ======================================================================== -->
+  <div id="viewRules" class="view-panel">
+    <div class="card">
+      <div class="card-header">
+        <h2>Jurisdictional PII &amp; Fintech Coverage</h2>
+      </div>
+      <p style="color: var(--ink-secondary); margin-bottom: 20px;">
+        Complaain embeds rigorous algorithmic validation (Luhn checksums, Mod-97 IBAN checks, ABA routing algorithms) and extensive contextual pattern libraries.
+      </p>
+
+      <div class="column-config-grid">
+        <div class="col-config-item">
+          <span class="badge badge-accent">Nigeria &amp; African Fintech</span>
+          <p><strong>Bank Verification Number (BVN):</strong> 11-digit unique identifier with context proximity filters.</p>
+          <p><strong>NIN:</strong> 11-digit National Identity Number.</p>
+          <p><strong>NUBAN:</strong> 10-digit Nigerian Uniform Bank Account Numbers.</p>
+          <p><strong>CAC Registration:</strong> Corporate Affairs Commission RC, BN, IT, LLP registrations.</p>
+          <p><strong>Local Telecoms:</strong> +234, 080, 081, 090, 091, 070 mobile formats.</p>
+        </div>
+
+        <div class="col-config-item">
+          <span class="badge badge-accent">UK &amp; European Legal</span>
+          <p><strong>Sort Codes:</strong> UK 6-digit bank routing + 8-digit account numbers.</p>
+          <p><strong>IBAN:</strong> International Bank Accounts verified with ISO 7064 Modulo 97-10.</p>
+          <p><strong>National Insurance (NI):</strong> Official HMRC 9-character format.</p>
+          <p><strong>Legal Citations:</strong> Neutral citations (UKSC, EWCA Civ/Crim, UKEAT, Employment Tribunals).</p>
+          <p><strong>Statutory Citations:</strong> Acts of Parliament, UK GDPR, Statutory Instruments.</p>
+        </div>
+
+        <div class="col-config-item">
+          <span class="badge badge-accent">US &amp; Global Financial</span>
+          <p><strong>Credit / Debit Cards:</strong> 13–19 digit PAN validated with Luhn Algorithm to eliminate false positives.</p>
+          <p><strong>SSN:</strong> US Social Security Numbers with geographic area validation.</p>
+          <p><strong>ABA Routing:</strong> 9-digit US Federal Reserve transit numbers.</p>
+          <p><strong>SWIFT / BIC:</strong> 8 or 11 character ISO 9362 bank identifier codes.</p>
+          <p><strong>Passports:</strong> International biometric passports across jurisdictions.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       VIEW 4: COMPLIANCE AUDIT LOG
+       ======================================================================== -->
+  <div id="viewAudit" class="view-panel">
+    <div class="card">
+      <div class="card-header">
+        <h2>Live Compliance Audit Records</h2>
+        <span class="badge badge-success">GDPR &amp; NDPR Ready</span>
+      </div>
+      <p style="color: var(--ink-secondary); margin-bottom: 16px;">
+        Every redaction and anonymization event is logged with exact row, column, original value, sanitized replacement, and rule applied.
+      </p>
+      <div class="table-responsive-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Sheet</th>
+              <th>Cell Location</th>
+              <th>Column Name</th>
+              <th>Original Value</th>
+              <th>Sanitized Output</th>
+              <th>Rule Applied</th>
+            </tr>
+          </thead>
+          <tbody id="auditTableBody">
+            <tr><td colspan="6" style="text-align: center; color: var(--ink-muted);">No redactions performed yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="js/vendor/xlsx.full.min.js"></script>
+<script src="js/vendor/tesseract.min.js"></script>
+<script src="js/ocr-engine.js"></script>
+<script src="js/pii-engine.js"></script>
+<script src="js/spreadsheet-redactor.js"></script>
+<script src="js/pdf-redactor.js"></script>
+<script src="js/offline-packager.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
